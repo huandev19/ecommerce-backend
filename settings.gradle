@@ -1,0 +1,26 @@
+pluginManagement {
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        mavenCentral()
+    }
+}
+
+rootProject.name = 'v8n-ecommerce'
+
+include 'modules:core'
+include 'modules:identity'
+include 'modules:catalog'
+include 'modules:inventory'
+include 'modules:cart'
+include 'modules:order'
+include 'modules:payment'
+include 'modules:fulfillment'
+include 'modules:promotion'
+include 'modules:notification'

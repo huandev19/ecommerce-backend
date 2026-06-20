@@ -1,0 +1,6 @@
+dependencies {
+    api project(':modules:core')
+    implementation project(':modules:catalog')
+    implementation project(':modules:identity')
+    implementation project(':modules:inventory')
+}

@@ -1,0 +1,76 @@
+spring:
+  application:
+    name: v8n-ecommerce
+
+  mvc:
+    throw-exception-if-no-handler-found: true
+
+  security:
+    user:
+      name: user_seeder
+      password: '##123456'
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/v8n_db
+    driver-class-name: org.postgresql.Driver
+    username: v8n_ecom
+    password: '#123456@'
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        highlight_sql: true
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password:
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+server:
+  port: 8080
+
+jwt:
+  secret: ${JWT_SECRET:eW91ci0yNTYtYml0LXNlY3JldC1rZXktZm9yLWRldmVsb3BtZW50LW9ubHktY2hhbmdlLWluLXByb2Q=}
+  expiration: 86400000
+
+cors:
+  allowed-origins: http://localhost:3000
+  allowed-methods: GET,POST,PUT,DELETE,OPTIONS
+  allowed-headers: "*"
+  allow-credentials: true
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  file:
+    name: logs/application.log # Ghi log vào thư mục 'logs', tên file là 'application.log'
+  level:
+    org.hibernate.SQL: DEBUG # In ra các câu lệnh SQL
+    org.hibernate.orm.jdbc.bind: TRACE # Cực kỳ quan trọng: In ra các giá trị của tham số (parameters) truyền vào câu SQL

@@ -1,0 +1,4 @@
+dependencies {
+    api project(':modules:core')
+    implementation project(':modules:order')
+}
