@@ -38,12 +38,37 @@ jobs:
           # scp trên ubuntu-latest (24.04) dùng SFTP protocol mặc định → tương thích internal-sftp
           cd build/libs && scp -o StrictHostKeyChecking=no -o HostKeyAlgorithms=+ssh-ed25519 -i ~/.ssh/vps_deploy_key *.jar vps@${{ secrets.VPS_HOST }}:/backend/
 
-      - name: Restart service on VPS
+      - name: Ensure & Restart service on VPS
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.VPS_HOST }}
           username: root
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
+            SERVICE_FILE=/etc/systemd/system/v8n-ecommerce.service
+
+            if [ ! -f "$SERVICE_FILE" ]; then
+              echo "Creating systemd service..."
+              sudo tee "$SERVICE_FILE" > /dev/null << 'SVC_EOF'
+            [Unit]
+            Description=V8N Ecommerce Backend
+            After=network.target postgresql.service
+
+            [Service]
+            User=root
+            WorkingDirectory=/www/v8n_ecommerce/backend
+            ExecStart=/usr/bin/java -jar /www/v8n_ecommerce/backend/v8n-ecommerce-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
+            SuccessExitStatus=143
+            TimeoutStopSec=10
+            Restart=on-failure
+            RestartSec=5
+
+            [Install]
+            WantedBy=multi-user.target
+            SVC_EOF
+              sudo systemctl daemon-reload
+              sudo systemctl enable v8n-ecommerce
+            fi
+
             sudo systemctl restart v8n-ecommerce
             sudo systemctl status v8n-ecommerce --no-pager
