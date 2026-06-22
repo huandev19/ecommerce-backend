@@ -57,6 +57,11 @@ jobs:
             [Service]
             User=root
             WorkingDirectory=/www/v8n_ecommerce/backend
+            Environment="DB_HOST=${{ secrets.DB_HOST }}"
+            Environment="DB_NAME=${{ secrets.DB_NAME }}"
+            Environment="DB_USERNAME=${{ secrets.DB_USERNAME }}"
+            Environment="DB_PASSWORD=${{ secrets.DB_PASSWORD }}"
+            Environment="JWT_SECRET=${{ secrets.JWT_PROD_SECRET }}"
             ExecStart=/usr/bin/java -jar /www/v8n_ecommerce/backend/v8n-ecommerce-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
             SuccessExitStatus=143
             TimeoutStopSec=10
