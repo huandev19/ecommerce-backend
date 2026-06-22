@@ -41,7 +41,7 @@ public class LoginHistory {
     @Column(name = "failure_reason", length = 50)
     private String failureReason;
 
-    @Column(name = "ip_address")
+    @Column(name = "ip_address", columnDefinition = "INET")
     private String ipAddress;
 
     @Column(name = "user_agent", columnDefinition = "TEXT")
