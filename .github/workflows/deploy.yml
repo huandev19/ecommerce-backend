@@ -33,10 +33,10 @@ jobs:
       - name: Upload fat JAR to VPS
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/vps_deploy_key
+          echo "${{ secrets.VPS_DEPLOY_KEY }}" > ~/.ssh/vps_deploy_key
           chmod 600 ~/.ssh/vps_deploy_key
-          # SCP dùng root để khớp quyền sở hữu thư mục /www/v8n_ecommerce/backend/
-          cd build/libs && scp -o StrictHostKeyChecking=no -o HostKeyAlgorithms=+ssh-ed25519 -i ~/.ssh/vps_deploy_key v8n-ecommerce.jar root@${{ secrets.VPS_HOST }}:/www/v8n_ecommerce/backend/
+          # User vps bị chroot jail vào /www/v8n_ecommerce/ → đường dẫn là /backend/ (chroot-relative)
+          cd build/libs && scp -o StrictHostKeyChecking=no -o HostKeyAlgorithms=+ssh-ed25519 -i ~/.ssh/vps_deploy_key v8n-ecommerce.jar vps@${{ secrets.VPS_HOST }}:/backend/
 
       - name: Ensure & Restart service on VPS
         uses: appleboy/ssh-action@master
@@ -47,9 +47,8 @@ jobs:
           script: |
             SERVICE_FILE=/etc/systemd/system/v8n-ecommerce.service
 
-            if [ ! -f "$SERVICE_FILE" ]; then
-              echo "Creating systemd service..."
-              sudo tee "$SERVICE_FILE" > /dev/null << 'SVC_EOF'
+            echo "Updating systemd service..."
+            sudo tee "$SERVICE_FILE" > /dev/null << 'SVC_EOF'
             [Unit]
             Description=V8N Ecommerce Backend
             After=network.target postgresql.service
@@ -71,9 +70,8 @@ jobs:
             [Install]
             WantedBy=multi-user.target
             SVC_EOF
-              sudo systemctl daemon-reload
-              sudo systemctl enable v8n-ecommerce
-            fi
 
+            sudo systemctl daemon-reload
+            sudo systemctl enable v8n-ecommerce
             sudo systemctl restart v8n-ecommerce
             sudo systemctl status v8n-ecommerce --no-pager
