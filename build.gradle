@@ -72,6 +72,11 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
+// Cố định tên file JAR để CI/CD không bị phụ thuộc vào version trong tên file
+bootJar {
+    archiveFileName = 'v8n-ecommerce.jar'
+}
+
 // Áp dụng cho TẤT CẢ các subprojects mà không cần điều kiện lọc phức tạp
 subprojects {
     apply plugin: 'java-library'

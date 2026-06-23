@@ -36,7 +36,7 @@ jobs:
           echo "${{ secrets.VPS_DEPLOY_KEY }}" > ~/.ssh/vps_deploy_key
           chmod 600 ~/.ssh/vps_deploy_key
           # Chỉ upload fat JAR (bỏ qua -plain.jar), scp trên ubuntu-latest dùng SFTP protocol
-          cd build/libs && scp -o StrictHostKeyChecking=no -o HostKeyAlgorithms=+ssh-ed25519 -i ~/.ssh/vps_deploy_key v8n-ecommerce-0.0.1-SNAPSHOT.jar vps@${{ secrets.VPS_HOST }}:/www/v8n_ecommerce/backend/
+          cd build/libs && scp -o StrictHostKeyChecking=no -o HostKeyAlgorithms=+ssh-ed25519 -i ~/.ssh/vps_deploy_key v8n-ecommerce.jar vps@${{ secrets.VPS_HOST }}:/www/v8n_ecommerce/backend/
 
       - name: Ensure & Restart service on VPS
         uses: appleboy/ssh-action@master
@@ -45,9 +45,6 @@ jobs:
           username: root
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            # Đổi tên JAR để đồng bộ tên file cố định trên server
-            mv /www/v8n_ecommerce/backend/v8n-ecommerce-0.0.1-SNAPSHOT.jar /www/v8n_ecommerce/backend/v8n-ecommerce.jar
-
             SERVICE_FILE=/etc/systemd/system/v8n-ecommerce.service
 
             if [ ! -f "$SERVICE_FILE" ]; then
