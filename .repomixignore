@@ -1,0 +1,73 @@
+# 1. Java Compiled Binaries & Archives (Tuyệt đối loại bỏ)
+# AI không thể đọc hiểu file đã biên dịch, chúng chỉ làm phình to context.
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+*.zip
+*.tar.gz
+
+# 2. Build Directories & Caches (Thư mục xuất file)
+# Thư mục chứa kết quả sau khi build của Maven hoặc Gradle.
+target/
+build/
+out/
+bin/
+.gradle/
+.m2/
+
+# 3. Gradle / Maven Wrappers & Scripts
+# Các file script và file jar của trình quản lý gói không mang ý nghĩa logic dự án.
+gradle/wrapper/gradle-wrapper.jar
+gradlew
+gradlew.bat
+mvnw
+mvnw.cmd
+
+# 4. Android Specifics (Nếu dự án là ứng dụng Android)
+# Loại bỏ các file cài đặt và mã nguồn trung gian do Android Studio tự sinh.
+*.apk
+*.ap_
+*.aab
+*.dex
+intermediates/
+generated/
+.cxx/
+*.keystore
+*.jks
+
+# 5. IDE & Cấu hình môi trường (IntelliJ IDEA, Eclipse, VS Code)
+# Cấu hình máy cá nhân không giúp AI hiểu luồng dữ liệu.
+.idea/
+*.iml
+*.iws
+*.ipr
+.eclipse/
+.metadata/
+.classpath
+.project
+.settings/
+.factorypath
+.vscode/
+
+# 6. Logs & JVM Crash Reports
+*.log
+hs_err_pid*.log
+replay_pid*.log
+crashlytics-build.properties
+
+# 7. Báo cáo Testing & Code Coverage
+jacoco.exec
+test-output/
+reports/
+
+# 8. Javadoc / Docs tự sinh
+# Nếu dự án có sinh tài liệu tự động từ code, không cần đưa vào vì AI tự đọc code.
+javadoc/
+docs/api/
+*.log
+repomix-output.md
+logs/*
+.gitignore
+.repomixignore
