@@ -313,7 +313,7 @@ public class CatalogService {
                 .slug(product.getSlug())
                 .thumbnailUrl(product.getThumbnailUrl())
                 .status(product.getStatus())
-                .categoryId(product.getCategory() != null ? product.getCategory().getId() : null)
+                .category(product.getCategory() != null ? product.getCategory().getSlug() : null)
                 .originCountry(product.getOriginCountry())
                 .discountable(product.isDiscountable())
                 .weight(product.getWeight())

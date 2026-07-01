@@ -21,7 +21,7 @@ public class ProductResponse {
     private String slug;
     private String thumbnailUrl;
     private ProductStatus status;
-    private UUID categoryId;
+    private String category;
     private String originCountry;
     private boolean discountable;
     private Integer weight;
