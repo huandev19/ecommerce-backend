@@ -18,12 +18,11 @@ public class UserAdminMapper {
 
     public AdminUserResponse toAdminUserResponse(UserAdmin user) {
         return AdminUserResponse.builder()
-                .id(user.getId())
                 .email(user.getEmail())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .phone(user.getPhone())
-                .avatarUrl(user.getAvatarUrl())
+                .avatarUrl(user.getAvatarUrlS3())
                 .isActive(user.getIsActive() != null && user.getIsActive())
                 .isActivated(user.isActivated())
                 .roles(mapRoles(user.getUserAdminRoles()))
@@ -43,7 +42,7 @@ public class UserAdminMapper {
                 .map(uar -> {
                     Role role = uar.getRole();
                     return RoleSummary.builder()
-                            .id(role.getId())
+                            .desc(role.getDescription())
                             .name(role.getName())
                             .build();
                 })

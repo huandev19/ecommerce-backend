@@ -8,6 +8,6 @@ import java.util.UUID;
 @Data
 @Builder
 public class RoleSummary {
-    private UUID id;
     private String name;
+    private String desc;
 }

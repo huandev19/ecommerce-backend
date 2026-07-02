@@ -18,10 +18,10 @@ public class AdminAuthResponse {
     @Data
     @Builder
     public static class AdminUserData {
-        private String id;
         private String email;
         private String firstName;
         private String lastName;
+        private String avatarUrl;
         private boolean isActive;
         private boolean isActivated;
         private List<RoleSummary> roles;

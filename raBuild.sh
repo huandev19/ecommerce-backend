@@ -1,4 +1,27 @@
 #!/bin/bash
+
+# === Kiểm tra và giải phóng port nếu đang được sử dụng ===
+APP_PORT=8080
+
+# Tìm PID của tiến trình đang chiếm port
+PID_USING_PORT=$(lsof -ti :$APP_PORT 2>/dev/null)
+
+if [ -n "$PID_USING_PORT" ]; then
+    echo "⚠️  Port $APP_PORT đang được sử dụng bởi PID: $PID_USING_PORT"
+    echo "🔄 Đang dừng tiến trình cũ..."
+    kill -15 $PID_USING_PORT 2>/dev/null
+    sleep 2
+    
+    # Kiểm tra lại nếu tiến trình vẫn còn sống, force kill
+    if kill -0 $PID_USING_PORT 2>/dev/null; then
+        echo "⚠️  Tiến trình vẫn chưa dừng, đang force kill..."
+        kill -9 $PID_USING_PORT 2>/dev/null
+        sleep 1
+    fi
+    
+    echo "✅ Đã giải phóng port $APP_PORT"
+fi
+
 echo "Đang tiến hành build project (bỏ qua bước test)..."
 ./gradlew clean build -x test
 

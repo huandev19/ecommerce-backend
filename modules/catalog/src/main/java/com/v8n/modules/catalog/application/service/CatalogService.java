@@ -158,8 +158,10 @@ public class CatalogService {
     }
 
     @Transactional(readOnly = true)
-    public List<CategoryResponse> getSubcategories(UUID parentId) {
-        return categoryRepository.findByParentCategoryIdOrderByDisplayOrderAsc(parentId).stream()
+    public List<CategoryResponse> getSubcategories(String slug) {
+        Category parentCategory = categoryRepository.findBySlug(slug)
+                .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
+        return categoryRepository.findByParentCategoryIdOrderByDisplayOrderAsc(parentCategory.getId()).stream()
                 .map(this::toCategoryResponse)
                 .collect(Collectors.toList());
     }
@@ -329,11 +331,10 @@ public class CatalogService {
 
     private CategoryResponse toCategoryResponse(Category category) {
         return CategoryResponse.builder()
-                .id(category.getId())
                 .name(category.getName())
                 .slug(category.getSlug())
                 .description(category.getDescription())
-                .parentCategoryId(category.getParentCategory() != null ? category.getParentCategory().getId() : null)
+                .parentSlug(category.getParentCategory() != null ? category.getParentCategory().getSlug() : null)
                 .active(category.isActive())
                 .createdAt(category.getCreatedAt())
                 .updatedAt(category.getUpdatedAt())

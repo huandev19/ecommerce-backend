@@ -10,7 +10,6 @@ import java.util.Set;
 @Data
 @Builder
 public class AdminUserResponse {
-    private String id;
     private String email;
     private String firstName;
     private String lastName;

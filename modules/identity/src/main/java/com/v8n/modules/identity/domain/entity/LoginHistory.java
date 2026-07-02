@@ -13,6 +13,8 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Type;
+import com.v8n.modules.core.infrastructure.db.InetType;
 
 import java.time.LocalDateTime;
 
@@ -41,6 +43,7 @@ public class LoginHistory {
     @Column(name = "failure_reason", length = 50)
     private String failureReason;
 
+    @Type(InetType.class)
     @Column(name = "ip_address", columnDefinition = "INET")
     private String ipAddress;
 

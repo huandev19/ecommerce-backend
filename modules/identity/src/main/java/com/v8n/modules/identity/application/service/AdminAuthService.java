@@ -10,7 +10,6 @@ import com.v8n.modules.identity.application.dto.SetPasswordRequest;
 import com.v8n.modules.identity.domain.entity.LoginHistory;
 import com.v8n.modules.identity.domain.entity.Role;
 import com.v8n.modules.identity.domain.entity.UserAdmin;
-import com.v8n.modules.identity.domain.entity.UserAdminRole;
 import com.v8n.modules.identity.domain.enums.LoginStatus;
 import com.v8n.modules.identity.domain.repository.LoginHistoryRepository;
 import com.v8n.modules.identity.domain.repository.UserAdminRepository;
@@ -49,20 +48,20 @@ public class AdminAuthService {
     public AdminAuthResponse login(AdminLoginRequest request, String ipAddress, String userAgent) {
         String email = request.getEmail().toLowerCase().trim();
 
-        // 1. Find user by email (active only)
+        // 1. Find a user by email (active only)
         UserAdmin user = userAdminRepository.findByEmailActive(email)
                 .orElseThrow(() -> {
                     // Record failed attempt for unknown user
                     recordLoginHistory(null, email, LoginStatus.FAILED, "INVALID_CREDENTIALS", ipAddress, userAgent);
-                    throw new BusinessException(ErrorCode.INVALID_CREDENTIALS);
+                    return new BusinessException(ErrorCode.INVALID_CREDENTIALS);
                 });
 
-        // 2. Check if password not set (not activated)
+        // 2. Check if the password is not set (not activated)
         if (user.getPasswordHash() == null) {
             throw new BusinessException(ErrorCode.INVALID_CREDENTIALS, "Tài khoản chưa được kích hoạt");
         }
 
-        // 3. Check if account is locked
+        // 3. Check if the account is locked
         if (user.isLocked()) {
             recordLoginHistory(user, email, LoginStatus.FAILED, "ACCOUNT_LOCKED", ipAddress, userAgent);
             throw new BusinessException(ErrorCode.ACCESS_DENIED,
@@ -111,7 +110,7 @@ public class AdminAuthService {
                     .map(uar -> {
                         Role role = uar.getRole();
                         return RoleSummary.builder()
-                                .id(role.getId())
+                                .desc(role.getDescription())
                                 .name(role.getName())
                                 .build();
                     })
@@ -124,10 +123,10 @@ public class AdminAuthService {
                 .tokenType("Bearer")
                 .expiresIn(jwtTokenProvider.getAccessTokenExpiration() / 1000)
                 .user(AdminAuthResponse.AdminUserData.builder()
-                        .id(user.getId())
                         .email(user.getEmail())
                         .firstName(user.getFirstName())
                         .lastName(user.getLastName())
+                        .avatarUrl(user.getAvatarUrlS3())
                         .isActive(user.getIsActive() != null && user.getIsActive())
                         .isActivated(user.isActivated())
                         .roles(roles)
@@ -177,7 +176,7 @@ public class AdminAuthService {
                     .map(uar -> {
                         Role role = uar.getRole();
                         return RoleSummary.builder()
-                                .id(role.getId())
+                                .desc(role.getDescription())
                                 .name(role.getName())
                                 .build();
                     })
@@ -186,10 +185,10 @@ public class AdminAuthService {
 
         return AdminAuthResponse.builder()
                 .user(AdminAuthResponse.AdminUserData.builder()
-                        .id(user.getId())
                         .email(user.getEmail())
                         .firstName(user.getFirstName())
                         .lastName(user.getLastName())
+                        .avatarUrl(user.getAvatarUrlS3())
                         .isActive(user.getIsActive() != null && user.getIsActive())
                         .isActivated(user.isActivated())
                         .roles(roles)
@@ -238,7 +237,7 @@ public class AdminAuthService {
     }
 
     /**
-     * Activate account: set password for the first time.
+     * Activate the account: set password for the first time.
      */
     @Transactional
     public void activate(SetPasswordRequest request, String ipAddress, String userAgent) {

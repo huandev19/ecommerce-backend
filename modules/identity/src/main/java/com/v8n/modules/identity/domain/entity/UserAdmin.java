@@ -126,4 +126,15 @@ public class UserAdmin {
     public boolean isLocked() {
         return lockedUntil != null && lockedUntil.isAfter(LocalDateTime.now());
     }
+
+    public String getAvatarUrl() {
+
+        return "http://localhost:9000";
+    }
+
+    public String getAvatarUrlS3() {
+        String avatarUrl = this.getAvatarUrl();
+        return avatarUrl + "/S3";
+    }
+
 }

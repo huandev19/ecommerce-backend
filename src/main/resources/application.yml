@@ -74,3 +74,14 @@ logging:
   level:
     org.hibernate.SQL: DEBUG # In ra các câu lệnh SQL
     org.hibernate.orm.jdbc.bind: TRACE # Cực kỳ quan trọng: In ra các giá trị của tham số (parameters) truyền vào câu SQL
+
+app:
+  storage:
+    base-url: http://localhost:8080
+    minio: # Case 2: cloud storage
+      endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+      access-key: ${MINIO_ACCESS_KEY:minioadmin}
+      secret-key: ${MINIO_SECRET_KEY:minioadmin}
+      bucket: ${MINIO_BUCKET:avatars}
+      region: ${MINIO_REGION:us-east-1}
+      public-url-prefix: ${MINIO_PUBLIC_URL:http://localhost:9000}

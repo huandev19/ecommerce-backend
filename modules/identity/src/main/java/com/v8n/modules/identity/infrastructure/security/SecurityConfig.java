@@ -1,12 +1,6 @@
 package com.v8n.modules.identity.infrastructure.security;
 
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.security.web.util.matcher.RequestMatcher;
-import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
-import org.springframework.web.servlet.handler.MatchableHandlerMapping;
-import org.springframework.web.servlet.HandlerExecutionChain;
-import org.springframework.web.method.HandlerMethod;
-import com.v8n.modules.core.infrastructure.security.annotation.PublicEndpoint;
+import com.v8n.modules.core.infrastructure.security.PublicEndpointRegistry;
 
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -34,6 +28,7 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
+    private final PublicEndpointRegistry publicEndpointRegistry;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -41,22 +36,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, HandlerMappingIntrospector introspector) throws Exception {
-
-        RequestMatcher publicEndpointMatcher = request -> {
-            try {
-                MatchableHandlerMapping mapping = introspector.getMatchableHandlerMapping(request);
-                if (mapping != null) {
-                    HandlerExecutionChain chain = mapping.getHandler(request);
-                    if (chain != null && chain.getHandler() instanceof HandlerMethod handlerMethod) {
-                        return handlerMethod.hasMethodAnnotation(PublicEndpoint.class);
-                    }
-                }
-            } catch (Exception e) {
-                // Ignore exception and fall through
-            }
-            return false;
-        };
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -73,7 +53,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/public/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers(publicEndpointMatcher).permitAll()
+                        .requestMatchers(publicEndpointRegistry::matches).permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

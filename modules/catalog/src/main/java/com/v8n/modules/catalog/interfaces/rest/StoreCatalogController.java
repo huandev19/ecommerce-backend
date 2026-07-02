@@ -64,9 +64,9 @@ public class StoreCatalogController {
     }
     
     @PublicEndpoint
-    @Operation(summary = "Get subcategories")
-    @GetMapping("/categories/{parentId}/subcategories")
-    public ApiResponse<List<CategoryResponse>> getSubcategories(@PathVariable UUID parentId) {
-        return ApiResponse.success(catalogService.getSubcategories(parentId));
+    @Operation(summary = "Get subcategories by slug")
+    @GetMapping("/categories/{slug}/subcategories")
+    public ApiResponse<List<CategoryResponse>> getSubcategories(@PathVariable String slug) {
+        return ApiResponse.success(catalogService.getSubcategories(slug));
     }
 }

@@ -13,11 +13,10 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CategoryResponse {
-    private UUID id;
     private String name;
     private String slug;
     private String description;
-    private UUID parentCategoryId;
+    private String parentSlug;
     private boolean active;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
