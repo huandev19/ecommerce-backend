@@ -2,7 +2,9 @@ package com.v8n.modules.core.infrastructure.security;
 
 import com.v8n.modules.core.infrastructure.security.annotation.PublicEndpoint;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
@@ -20,17 +22,18 @@ import java.util.Set;
  * which can be unreliable for nested path variables.
  */
 @Component
-public class PublicEndpointRegistry implements InitializingBean {
+public class PublicEndpointRegistry implements ApplicationListener<ContextRefreshedEvent> {
 
-    private final RequestMappingHandlerMapping requestMappingHandlerMapping;
+    private final ApplicationContext applicationContext;
     private final Set<AntPathRequestMatcher> publicEndpointMatchers = new HashSet<>();
 
-    public PublicEndpointRegistry(RequestMappingHandlerMapping requestMappingHandlerMapping) {
-        this.requestMappingHandlerMapping = requestMappingHandlerMapping;
+    public PublicEndpointRegistry(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
     }
 
     @Override
-    public void afterPropertiesSet() {
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        RequestMappingHandlerMapping requestMappingHandlerMapping = applicationContext.getBean(RequestMappingHandlerMapping.class);
         Map<RequestMappingInfo, HandlerMethod> handlerMethods = requestMappingHandlerMapping.getHandlerMethods();
 
         for (Map.Entry<RequestMappingInfo, HandlerMethod> entry : handlerMethods.entrySet()) {
