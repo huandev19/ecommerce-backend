@@ -13,6 +13,7 @@ public enum ErrorCode {
     INVALID_CREDENTIALS("Invalid credentials"),
     EMAIL_ALREADY_EXISTS("Email already exists"),
     ROLE_NOT_FOUND("Role not found"),
+    TOKEN_REVOKED("Token has been revoked"),
 
     // Cart
     CART_NOT_FOUND("Cart not found"),

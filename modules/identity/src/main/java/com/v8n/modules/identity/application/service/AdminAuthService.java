@@ -14,6 +14,7 @@ import com.v8n.modules.identity.domain.enums.LoginStatus;
 import com.v8n.modules.identity.domain.repository.LoginHistoryRepository;
 import com.v8n.modules.identity.domain.repository.UserAdminRepository;
 import com.v8n.modules.identity.infrastructure.security.JwtTokenProvider;
+import com.v8n.modules.identity.infrastructure.security.TokenBlacklistService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -40,6 +41,7 @@ public class AdminAuthService {
     private final LoginHistoryRepository loginHistoryRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final TokenBlacklistService tokenBlacklistService;
 
     /**
      * Admin login with lockout flow.
@@ -281,6 +283,29 @@ public class AdminAuthService {
 
         recordLoginHistory(user, user.getEmail(), LoginStatus.SUCCESS, null, ipAddress, userAgent);
         log.info("Account activated: {}", user.getEmail());
+    }
+
+    /**
+     * Admin logout: revoke both access and refresh tokens, record logout event in login history.
+     */
+    public void logout(String accessToken, String refreshToken, String userId, String ipAddress, String userAgent) {
+        tokenBlacklistService.revoke(accessToken, "ACCESS", userId, "admin", "ADMIN_LOGOUT", ipAddress);
+        if (refreshToken != null && !refreshToken.isBlank()) {
+            tokenBlacklistService.revoke(refreshToken, "REFRESH", userId, "admin", "ADMIN_LOGOUT", ipAddress);
+        }
+
+        recordLoginHistory(null, userId, LoginStatus.LOGOUT, "ADMIN_LOGOUT", ipAddress, userAgent);
+        log.info("Admin user {} logged out from IP {}", userId, ipAddress);
+    }
+
+    /**
+     * Admin logout all sessions: revoke all tokens for the admin user, record audit in login history.
+     */
+    public void logoutAll(String userId, String ipAddress, String userAgent) {
+        tokenBlacklistService.revokeAllForUser(userId, "admin", "ADMIN_LOGOUT_ALL");
+
+        recordLoginHistory(null, userId, LoginStatus.LOGOUT, "ADMIN_LOGOUT_ALL", ipAddress, userAgent);
+        log.info("All sessions revoked for admin user {} from IP {}", userId, ipAddress);
     }
 
     // --- Private helpers ---

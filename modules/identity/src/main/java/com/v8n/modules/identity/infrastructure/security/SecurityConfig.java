@@ -48,6 +48,9 @@ public class SecurityConfig {
                         .accessDeniedHandler(customAccessDeniedHandler)
                 )
                 .authorizeHttpRequests(auth -> auth
+                        // Logout endpoints must be authenticated (not public)
+                        .requestMatchers("/api/v1/auth/logout/**").authenticated()
+                        .requestMatchers("/api/v1/auth/admin/logout/**").authenticated()
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/api/v1/auth/admin/**", "/api/v1/auth/activate/**").permitAll()
                         .requestMatchers("/api/v1/public/**").permitAll()

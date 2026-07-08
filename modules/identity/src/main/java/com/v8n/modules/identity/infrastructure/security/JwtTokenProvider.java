@@ -5,17 +5,13 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
-import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
-import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -26,29 +22,16 @@ import java.util.UUID;
 @Component
 public class JwtTokenProvider {
 
-    @Value("${jwt.secret:}")
-    private String jwtSecret;
-
     @Value("${jwt.access-token-expiration:3600000}")
     private long accessTokenExpiration;
 
     @Value("${jwt.refresh-token-expiration:604800000}")
     private long refreshTokenExpiration;
 
-    private SecretKey key;
+    private final SecretKey key;
 
-    @PostConstruct
-    public void init() {
-        if (jwtSecret == null || jwtSecret.isBlank()) {
-            jwtSecret = Base64.getEncoder().encodeToString(
-                    "v8n-ecommerce-default-secret-key-must-be-changed-in-production-2024".getBytes(StandardCharsets.UTF_8)
-            );
-        }
-        byte[] keyBytes = Base64.getDecoder().decode(jwtSecret);
-        if (keyBytes.length < 32) {
-            keyBytes = java.util.Arrays.copyOf(keyBytes, 32);
-        }
-        this.key = Keys.hmacShaKeyFor(keyBytes);
+    public JwtTokenProvider(SecretKey jwtSecretKey) {
+        this.key = jwtSecretKey;
     }
 
     public String generateAccessToken(UUID userId, String email) {

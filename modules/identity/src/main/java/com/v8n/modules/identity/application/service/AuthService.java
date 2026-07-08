@@ -9,6 +9,7 @@ import com.v8n.modules.identity.application.dto.UserResponse;
 import com.v8n.modules.identity.domain.entity.User;
 import com.v8n.modules.identity.domain.repository.UserRepository;
 import com.v8n.modules.identity.infrastructure.security.JwtTokenProvider;
+import com.v8n.modules.identity.infrastructure.security.TokenBlacklistService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,6 +26,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final TokenBlacklistService tokenBlacklistService;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -81,6 +83,25 @@ public class AuthService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         return buildAuthResponse(user);
+    }
+
+    /**
+     * Logout: revoke both access token and refresh token for a customer user.
+     */
+    public void logout(String accessToken, String refreshToken, String userId, String ipAddress) {
+        tokenBlacklistService.revoke(accessToken, "ACCESS", userId, "customer", "USER_LOGOUT", ipAddress);
+        if (refreshToken != null && !refreshToken.isBlank()) {
+            tokenBlacklistService.revoke(refreshToken, "REFRESH", userId, "customer", "USER_LOGOUT", ipAddress);
+        }
+        log.info("Customer user {} logged out from IP {}", userId, ipAddress);
+    }
+
+    /**
+     * Logout all sessions: revoke all tokens for the customer user.
+     */
+    public void logoutAll(String userId, String ipAddress) {
+        tokenBlacklistService.revokeAllForUser(userId, "customer", "USER_LOGOUT_ALL");
+        log.info("All sessions revoked for customer user {} from IP {}", userId, ipAddress);
     }
 
     private AuthResponse buildAuthResponse(User user) {

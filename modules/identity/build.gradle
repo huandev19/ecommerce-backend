@@ -1,5 +1,6 @@
 dependencies {
     api project(':modules:core')
+    implementation "org.springframework.boot:spring-boot-starter-data-redis:${redisVersion}"
     implementation "io.jsonwebtoken:jjwt-api:${jjwtVersion}"
     runtimeOnly "io.jsonwebtoken:jjwt-impl:${jjwtVersion}"
     runtimeOnly "io.jsonwebtoken:jjwt-jackson:${jjwtVersion}"

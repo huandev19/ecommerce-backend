@@ -10,16 +10,19 @@ import com.v8n.modules.identity.application.dto.UpdateUserAdminRequest;
 import com.v8n.modules.identity.application.mapper.UserAdminMapper;
 import com.v8n.modules.identity.domain.entity.Permission;
 import com.v8n.modules.identity.domain.entity.Role;
+import com.v8n.modules.identity.domain.entity.LoginHistory;
 import com.v8n.modules.identity.domain.entity.UserAdmin;
 import com.v8n.modules.identity.domain.entity.UserAdminPermission;
 import com.v8n.modules.identity.domain.entity.UserAdminPermissionId;
 import com.v8n.modules.identity.domain.entity.UserAdminRole;
 import com.v8n.modules.identity.domain.entity.UserAdminRoleId;
+import com.v8n.modules.identity.domain.enums.LoginStatus;
 import com.v8n.modules.identity.domain.repository.PermissionRepository;
 import com.v8n.modules.identity.domain.repository.RoleRepository;
 import com.v8n.modules.identity.domain.repository.UserAdminPermissionRepository;
 import com.v8n.modules.identity.domain.repository.UserAdminRepository;
 import com.v8n.modules.identity.domain.repository.UserAdminRoleRepository;
+import com.v8n.modules.identity.infrastructure.security.TokenBlacklistService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -44,6 +47,8 @@ public class UserAdminService {
     private final UserAdminRoleRepository userAdminRoleRepository;
     private final UserAdminPermissionRepository userAdminPermissionRepository;
     private final UserAdminMapper userAdminMapper;
+    private final TokenBlacklistService tokenBlacklistService;
+    private final LoginHistoryService loginHistoryService;
 
     @Transactional(readOnly = true)
     public List<AdminUserResponse> listUsers(String q, String status) {
@@ -278,6 +283,22 @@ public class UserAdminService {
 
         log.info("Activation resent for: {} by {}", user.getEmail(), currentUserId);
         return userAdminMapper.toAdminUserResponse(user);
+    }
+
+    /**
+     * Force-revoke all tokens for a target admin user and record audit trail in login history.
+     *
+     * @param targetUserId the admin user whose tokens are being revoked
+     * @param adminId      the admin who is performing the force-revoke
+     */
+    @Transactional
+    public void revokeTokens(String targetUserId, String adminId) {
+        tokenBlacklistService.revokeAllForUser(targetUserId, "admin", "ADMIN_FORCE_LOGOUT");
+
+        loginHistoryService.recordLoginHistory(null, adminId, LoginStatus.LOGOUT,
+                "FORCE_LOGOUT_BY_ADMIN", null, null);
+
+        log.info("Admin user {} force-revoked tokens for user {} (admin)", adminId, targetUserId);
     }
 
     // --- Private helpers ---

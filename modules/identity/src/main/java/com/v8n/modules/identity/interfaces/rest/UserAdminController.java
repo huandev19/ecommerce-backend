@@ -118,4 +118,13 @@ public class UserAdminController {
         AdminUserResponse response = userAdminService.resendActivation(id, principal.getName());
         return ResponseEntity.ok(ApiResponse.success(response));
     }
+
+    @PostMapping("/{id}/revoke-tokens")
+    @PreAuthorize("hasAuthority('user:update')")
+    public ResponseEntity<ApiResponse<Void>> revokeTokens(
+            @PathVariable String id,
+            Principal principal) {
+        userAdminService.revokeTokens(id, principal.getName());
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
 }

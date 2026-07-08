@@ -3,9 +3,11 @@ package com.v8n.modules.identity.interfaces.rest;
 import com.v8n.modules.core.application.dto.ApiResponse;
 import com.v8n.modules.identity.application.dto.AuthResponse;
 import com.v8n.modules.identity.application.dto.LoginRequest;
+import com.v8n.modules.identity.application.dto.LogoutRequest;
 import com.v8n.modules.identity.application.dto.RegisterRequest;
 import com.v8n.modules.identity.application.dto.UserResponse;
 import com.v8n.modules.identity.application.service.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -55,5 +57,35 @@ public class AuthController {
         String refreshToken = authHeader.substring(7);
         AuthResponse response = authService.refreshToken(refreshToken);
         return ResponseEntity.ok(ApiResponse.success("Token refreshed", response));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<String>> logout(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody(required = false) LogoutRequest request,
+            Principal principal,
+            HttpServletRequest httpRequest) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("Invalid access token"));
+        }
+        String accessToken = authHeader.substring(7);
+        String refreshToken = request != null ? request.getRefreshToken() : null;
+        String userId = principal.getName();
+        String ipAddress = httpRequest.getRemoteAddr();
+
+        authService.logout(accessToken, refreshToken, userId, ipAddress);
+        return ResponseEntity.ok(ApiResponse.success("Logout successful"));
+    }
+
+    @PostMapping("/logout/all")
+    public ResponseEntity<ApiResponse<String>> logoutAll(
+            Principal principal,
+            HttpServletRequest httpRequest) {
+        String userId = principal.getName();
+        String ipAddress = httpRequest.getRemoteAddr();
+
+        authService.logoutAll(userId, ipAddress);
+        return ResponseEntity.ok(ApiResponse.success("All sessions revoked"));
     }
 }

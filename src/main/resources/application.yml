@@ -34,8 +34,10 @@ spring:
   data:
     redis:
       host: localhost
-      port: 6379
-      password:
+      port: 63379
+      username: v8n_client
+      password: v8b!2026
+      database: 0
 
   mail:
     host: smtp.gmail.com
@@ -85,3 +87,7 @@ app:
       bucket: ${MINIO_BUCKET:avatars}
       region: ${MINIO_REGION:us-east-1}
       public-url-prefix: ${MINIO_PUBLIC_URL:http://localhost:9000}
+
+  scheduling:
+    token-cleanup:
+      enabled: false

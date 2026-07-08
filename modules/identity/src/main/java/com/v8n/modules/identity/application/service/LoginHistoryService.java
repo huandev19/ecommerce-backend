@@ -2,6 +2,7 @@ package com.v8n.modules.identity.application.service;
 
 import com.v8n.modules.identity.application.dto.LoginHistoryResponse;
 import com.v8n.modules.identity.domain.entity.LoginHistory;
+import com.v8n.modules.identity.domain.entity.UserAdmin;
 import com.v8n.modules.identity.domain.enums.LoginStatus;
 import com.v8n.modules.identity.domain.repository.LoginHistoryRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,6 +22,23 @@ import java.util.stream.Collectors;
 public class LoginHistoryService {
 
     private final LoginHistoryRepository loginHistoryRepository;
+
+    /**
+     * Record a login history entry.
+     */
+    public void recordLoginHistory(UserAdmin user, String email, LoginStatus status,
+                                    String failureReason, String ipAddress, String userAgent) {
+        LoginHistory history = new LoginHistory();
+        history.setId(UUID.randomUUID().toString());
+        history.setUserAdmin(user);
+        history.setEmail(email);
+        history.setStatus(status);
+        history.setFailureReason(failureReason);
+        history.setIpAddress(ipAddress);
+        history.setUserAgent(userAgent);
+        history.setAttemptedAt(LocalDateTime.now());
+        loginHistoryRepository.save(history);
+    }
 
     /**
      * Lấy danh sách login history có phân trang và lọc.

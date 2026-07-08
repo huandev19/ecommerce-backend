@@ -16,6 +16,18 @@ spring:
     enabled: true
     locations: classpath:db/migration
 
+  data:
+    redis:
+      host: localhost
+      port: 63379
+      username: v8n_client
+      password: v8b!2026
+      database: 0
+
+jwt:
+  secret: ${JWT_SECRET:}
+  expiration: 86400000
+
 app:
   storage:
     base-url: ${STORAGE_BASE_URL}

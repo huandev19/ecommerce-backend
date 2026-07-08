@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final TokenBlacklistService tokenBlacklistService;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
@@ -36,6 +37,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (StringUtils.hasText(jwt) && jwtTokenProvider.validateToken(jwt)) {
                 String userId = jwtTokenProvider.getUserIdFromTokenAsString(jwt);
+
+                // Check if token has been revoked (blacklist check)
+                if (tokenBlacklistService.isRevoked(jwt)) {
+                    log.info("Token has been revoked for user: {}", userId);
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token has been revoked");
+                    return;
+                }
 
                 // Extract permissions from JWT claims and convert to GrantedAuthority
                 List<String> permissions = jwtTokenProvider.getPermissionsFromToken(jwt);

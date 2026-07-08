@@ -3,6 +3,7 @@ package com.v8n.modules.identity.interfaces.rest;
 import com.v8n.modules.core.application.dto.ApiResponse;
 import com.v8n.modules.identity.application.dto.AdminAuthResponse;
 import com.v8n.modules.identity.application.dto.AdminLoginRequest;
+import com.v8n.modules.identity.application.dto.LogoutRequest;
 import com.v8n.modules.identity.application.service.AdminAuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -52,5 +53,39 @@ public class AdminAuthController {
         String refreshToken = authHeader.substring(7);
         AdminAuthResponse response = adminAuthService.refreshToken(refreshToken);
         return ResponseEntity.ok(ApiResponse.success("Token refreshed", response));
+    }
+
+    @PostMapping("/logout")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponse<String>> logout(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody(required = false) LogoutRequest request,
+            Principal principal,
+            HttpServletRequest httpRequest) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("Invalid access token"));
+        }
+        String accessToken = authHeader.substring(7);
+        String refreshToken = request != null ? request.getRefreshToken() : null;
+        String userId = principal.getName();
+        String ipAddress = httpRequest.getRemoteAddr();
+        String userAgent = httpRequest.getHeader("User-Agent");
+
+        adminAuthService.logout(accessToken, refreshToken, userId, ipAddress, userAgent);
+        return ResponseEntity.ok(ApiResponse.success("Logout successful"));
+    }
+
+    @PostMapping("/logout/all")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponse<String>> logoutAll(
+            Principal principal,
+            HttpServletRequest httpRequest) {
+        String userId = principal.getName();
+        String ipAddress = httpRequest.getRemoteAddr();
+        String userAgent = httpRequest.getHeader("User-Agent");
+
+        adminAuthService.logoutAll(userId, ipAddress, userAgent);
+        return ResponseEntity.ok(ApiResponse.success("All sessions revoked"));
     }
 }
