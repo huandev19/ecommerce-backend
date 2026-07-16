@@ -31,6 +31,8 @@ public class CustomerService {
 
     @Transactional(readOnly = true)
     public CustomerResponse getCustomerByUserId(UUID userId) {
+
+        log.info("user id: {}", userId);
         User user = userRepository.findByIdNotDeleted(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 

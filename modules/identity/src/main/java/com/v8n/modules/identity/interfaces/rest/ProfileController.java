@@ -40,6 +40,10 @@ public class ProfileController {
     }
 
     private UUID getUserIdFromAuthentication(Authentication authentication) {
-        return (UUID) authentication.getPrincipal();
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof String) {
+            return UUID.fromString((String) principal);
+        }
+        return (UUID) principal;
     }
 }
