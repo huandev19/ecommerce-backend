@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:5432/${DB_NAME:v8n_db}
-    username: ${DB_USERNAME:v8n_ecom}
-    password: '${DB_PASSWORD:#123456@}'
+    url: jdbc:postgresql://${DB_HOST}:5432/${DB_NAME}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -18,23 +18,32 @@ spring:
 
   data:
     redis:
-      host: localhost
-      port: 63379
-      username: v8n_client
-      password: v8b!2026
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      username: ${REDIS_USERNAME}
+      password: ${REDIS_PASSWORD}
       database: 0
 
 jwt:
-  secret: ${JWT_SECRET:}
+  secret: ${JWT_SECRET}
   expiration: 86400000
+
+logging:
+  file:
+    name: logs/application.log
+  level:
+    root: INFO
+    com.v8n: DEBUG
+    org.hibernate.SQL: WARN
+    org.hibernate.orm.jdbc.bind: WARN
 
 app:
   storage:
     base-url: ${STORAGE_BASE_URL}
     minio: # Case 2: cloud storage
       endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
-      access-key: ${MINIO_ACCESS_KEY:minioadmin}
-      secret-key: ${MINIO_SECRET_KEY:minioadmin}
+      access-key: ${MINIO_ACCESS_KEY}
+      secret-key: ${MINIO_SECRET_KEY}
       bucket: ${MINIO_BUCKET:avatars}
       region: ${MINIO_REGION:us-east-1}
       public-url-prefix: ${MINIO_PUBLIC_URL:http://localhost:9000}

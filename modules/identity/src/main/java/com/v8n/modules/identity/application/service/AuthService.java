@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -45,10 +46,10 @@ public class AuthService {
         user = userRepository.save(user);
         log.info("New user registered: {}", user.getEmail());
 
-        return buildAuthResponse(user);
+        return buildAuthResponse(user, null);
     }
 
-    public AuthResponse login(LoginRequest request) {
+    public AuthResponse login(LoginRequest request, String deviceId) {
         User user = userRepository.findByEmail(request.getEmail().toLowerCase().trim())
                 .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_CREDENTIALS));
 
@@ -62,9 +63,9 @@ public class AuthService {
 
         user.setLastLoginAt(LocalDateTime.now());
         userRepository.save(user);
-        log.info("User logged in: {}", user.getEmail());
+        log.info("User logged in {}: {}", deviceId != null ? "with device " + deviceId : "(null device)", user.getEmail());
 
-        return buildAuthResponse(user);
+        return buildAuthResponse(user, deviceId);
     }
 
     public UserResponse getCurrentUser(String userId) {
@@ -82,17 +83,14 @@ public class AuthService {
         User user = userRepository.findByIdNotDeleted(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        return buildAuthResponse(user);
+        return buildAuthResponse(user, null);
     }
 
     /**
-     * Logout: revoke both access token and refresh token for a customer user.
+     * Logout: revoke the current device session for a customer user.
      */
-    public void logout(String accessToken, String refreshToken, String userId, String ipAddress) {
-        tokenBlacklistService.revoke(accessToken, "ACCESS", userId, "customer", "USER_LOGOUT", ipAddress);
-        if (refreshToken != null && !refreshToken.isBlank()) {
-            tokenBlacklistService.revoke(refreshToken, "REFRESH", userId, "customer", "USER_LOGOUT", ipAddress);
-        }
+    public void logout(String accessToken, String userId, String ipAddress) {
+        tokenBlacklistService.logout(accessToken, userId, "customer", "USER_LOGOUT", ipAddress);
         log.info("Customer user {} logged out from IP {}", userId, ipAddress);
     }
 
@@ -104,8 +102,8 @@ public class AuthService {
         log.info("All sessions revoked for customer user {} from IP {}", userId, ipAddress);
     }
 
-    private AuthResponse buildAuthResponse(User user) {
-        String accessToken = jwtTokenProvider.generateAccessToken(user.getId(), user.getEmail());
+    private AuthResponse buildAuthResponse(User user, String deviceId) {
+        String accessToken = jwtTokenProvider.generateAccessToken(user.getId(), user.getEmail(), deviceId);
         String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId());
 
         return AuthResponse.builder()

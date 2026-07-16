@@ -32,7 +32,8 @@ public class AdminAuthController {
             HttpServletRequest httpRequest) {
         String ipAddress = httpRequest.getRemoteAddr();
         String userAgent = httpRequest.getHeader("User-Agent");
-        AdminAuthResponse response = adminAuthService.login(request, ipAddress, userAgent);
+        String deviceId = httpRequest.getHeader("X-Device-Id");
+        AdminAuthResponse response = adminAuthService.login(request, ipAddress, userAgent, deviceId);
         return ResponseEntity.ok(ApiResponse.success("Login successful", response));
     }
 
@@ -67,12 +68,11 @@ public class AdminAuthController {
                     .body(ApiResponse.error("Invalid access token"));
         }
         String accessToken = authHeader.substring(7);
-        String refreshToken = request != null ? request.getRefreshToken() : null;
         String userId = principal.getName();
         String ipAddress = httpRequest.getRemoteAddr();
         String userAgent = httpRequest.getHeader("User-Agent");
 
-        adminAuthService.logout(accessToken, refreshToken, userId, ipAddress, userAgent);
+        adminAuthService.logout(accessToken, userId, ipAddress, userAgent);
         return ResponseEntity.ok(ApiResponse.success("Logout successful"));
     }
 

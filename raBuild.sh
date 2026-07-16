@@ -23,7 +23,7 @@ if [ -n "$PID_USING_PORT" ]; then
 fi
 
 echo "Đang tiến hành build project (bỏ qua bước test)..."
-./gradlew clean build -x test
+./gradlew clean build -x test --no-parallel
 
 if [ $? -eq 0 ]; then
     echo "✅ Build thành công!"

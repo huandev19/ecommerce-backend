@@ -35,12 +35,17 @@ public class JwtTokenProvider {
     }
 
     public String generateAccessToken(UUID userId, String email) {
+        return generateAccessToken(userId, email, null);
+    }
+
+    public String generateAccessToken(UUID userId, String email, String deviceId) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + accessTokenExpiration);
 
         return Jwts.builder()
                 .subject(userId.toString())
                 .claim("email", email)
+                .claim("device_id", deviceId)
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .signWith(key)
@@ -51,6 +56,10 @@ public class JwtTokenProvider {
      * Generate access token cho admin user với actorType và permissions.
      */
     public String generateAccessToken(String userId, String email, String actorType, Set<String> permissions) {
+        return generateAccessToken(userId, email, actorType, permissions, null);
+    }
+
+    public String generateAccessToken(String userId, String email, String actorType, Set<String> permissions, String deviceId) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + accessTokenExpiration);
 
@@ -59,6 +68,7 @@ public class JwtTokenProvider {
                 .claim("email", email)
                 .claim("actor_type", actorType)
                 .claim("permissions", permissions != null ? new ArrayList<>(permissions) : Collections.emptyList())
+                .claim("device_id", deviceId)
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .signWith(key)
@@ -142,6 +152,24 @@ public class JwtTokenProvider {
             log.error("JWT claims string is empty: {}", e.getMessage());
         }
         return false;
+    }
+
+    /**
+     * Extract the device_id claim from a JWT token.
+     * Returns null if the claim is not present (backward compatible).
+     */
+    public String getDeviceIdFromToken(String token) {
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith(key)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+            return claims.get("device_id", String.class);
+        } catch (Exception e) {
+            log.warn("Failed to extract device id from token: {}", e.getMessage());
+            return null;
+        }
     }
 
     public long getAccessTokenExpiration() {

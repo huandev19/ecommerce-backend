@@ -36,8 +36,11 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
-        AuthResponse response = authService.login(request);
+    public ResponseEntity<ApiResponse<AuthResponse>> login(
+            @Valid @RequestBody LoginRequest request,
+            HttpServletRequest httpRequest) {
+        String deviceId = httpRequest.getHeader("X-Device-Id");
+        AuthResponse response = authService.login(request, deviceId);
         return ResponseEntity.ok(ApiResponse.success("Login successful", response));
     }
 
@@ -70,11 +73,10 @@ public class AuthController {
                     .body(ApiResponse.error("Invalid access token"));
         }
         String accessToken = authHeader.substring(7);
-        String refreshToken = request != null ? request.getRefreshToken() : null;
         String userId = principal.getName();
         String ipAddress = httpRequest.getRemoteAddr();
 
-        authService.logout(accessToken, refreshToken, userId, ipAddress);
+        authService.logout(accessToken, userId, ipAddress);
         return ResponseEntity.ok(ApiResponse.success("Logout successful"));
     }
 

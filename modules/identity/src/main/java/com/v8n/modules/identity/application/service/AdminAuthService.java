@@ -47,7 +47,7 @@ public class AdminAuthService {
      * Admin login with lockout flow.
      */
     @Transactional
-    public AdminAuthResponse login(AdminLoginRequest request, String ipAddress, String userAgent) {
+    public AdminAuthResponse login(AdminLoginRequest request, String ipAddress, String userAgent, String deviceId) {
         String email = request.getEmail().toLowerCase().trim();
 
         // 1. Find a user by email (active only)
@@ -102,7 +102,7 @@ public class AdminAuthService {
         // Generate JWT with permissions
         Set<String> permissions = user.getEffectivePermissions();
         String accessToken = jwtTokenProvider.generateAccessToken(
-                user.getId(), user.getEmail(), "admin", permissions);
+                user.getId(), user.getEmail(), "admin", permissions, deviceId);
         String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId());
 
         // Build response
@@ -286,13 +286,10 @@ public class AdminAuthService {
     }
 
     /**
-     * Admin logout: revoke both access and refresh tokens, record logout event in login history.
+     * Admin logout: revoke the current device session, record logout event in login history.
      */
-    public void logout(String accessToken, String refreshToken, String userId, String ipAddress, String userAgent) {
-        tokenBlacklistService.revoke(accessToken, "ACCESS", userId, "admin", "ADMIN_LOGOUT", ipAddress);
-        if (refreshToken != null && !refreshToken.isBlank()) {
-            tokenBlacklistService.revoke(refreshToken, "REFRESH", userId, "admin", "ADMIN_LOGOUT", ipAddress);
-        }
+    public void logout(String accessToken, String userId, String ipAddress, String userAgent) {
+        tokenBlacklistService.logout(accessToken, userId, "admin", "ADMIN_LOGOUT", ipAddress);
 
         recordLoginHistory(null, userId, LoginStatus.LOGOUT, "ADMIN_LOGOUT", ipAddress, userAgent);
         log.info("Admin user {} logged out from IP {}", userId, ipAddress);

@@ -4,27 +4,22 @@
 
 Allow administrators to force-logout other users (both admin and customer users) by revoking all their active tokens using `BLACKLIST_KEY_PREFIX` with `ALL`-format markers. This is essential for security management such as terminating compromised sessions or enforcing access policies.
 
-## Requirements
+## ADDED Requirements
 
-### Requirement: Admin can list customer users
-The system SHALL provide a `GET /api/v1/admin/customers` endpoint that allows admins to search and list customer users with pagination.
+### Requirement: Admin force-revoke uses BLACKLIST_KEY_PREFIX
+The system SHALL use `BLACKLIST_KEY_PREFIX` with `ALL_{userId}_{userType}` format when an admin force-revokes all tokens for a target user.
 
-#### Scenario: List all customers
-- **WHEN** admin sends `GET /api/v1/admin/customers?page=0&size=20`
-- **THEN** system SHALL query the `users` table
-- **AND** system SHALL return paginated list of customers with: id, email, firstName, lastName, status, createdAt
+#### Scenario: Force-revoke stores blacklist:ALL marker
+- **WHEN** admin with `user:update` permission sends `POST /api/v1/users/{id}/revoke-tokens`
+- **THEN** system SHALL store marker `blacklist:ALL_{targetUserId}_admin` in Redis
+- **AND** system SHALL record a `LOGOUT` entry in `login_history` with reason `FORCE_LOGOUT_BY_ADMIN`
+- **AND** system SHALL return `200 OK`
+- **AND** subsequent requests from that user's ANY device SHALL be rejected (all devices revoked)
 
-#### Scenario: Search customers by email or name
-- **WHEN** admin sends `GET /api/v1/admin/customers?q=john&page=0&size=20`
-- **THEN** system SHALL filter customers where email or name contains "john"
-- **AND** system SHALL return matching paginated results
-
-#### Scenario: Non-admin cannot list customers
-- **WHEN** non-admin sends `GET /api/v1/admin/customers`
-- **THEN** system SHALL return `403 Forbidden`
+## MODIFIED Requirements
 
 ### Requirement: Admin can force-revoke admin user tokens
-The system SHALL provide a `POST /api/v1/users/{id}/revoke-tokens` endpoint for admin to force-logout another admin user using `BLACKLIST_KEY_PREFIX`.
+The system SHALL provide a `POST /api/v1/users/{id}/revoke-tokens` endpoint for admin to force-logout another admin user.
 
 #### Scenario: Successful force-revoke admin user
 - **WHEN** admin with `user:update` permission sends `POST /api/v1/users/{id}/revoke-tokens`
@@ -32,10 +27,9 @@ The system SHALL provide a `POST /api/v1/users/{id}/revoke-tokens` endpoint for 
 - **AND** system SHALL store marker `blacklist:ALL_{targetUserId}_admin` in Redis (TTL: 30 days)
 - **AND** system SHALL record a `LOGOUT` entry in `login_history` with reason `FORCE_LOGOUT_BY_ADMIN`
 - **AND** system SHALL return `200 OK`
-- **AND** subsequent requests from that user's ANY device SHALL be rejected (all devices revoked)
 
 ### Requirement: Admin can force-revoke customer tokens
-The system SHALL provide a `POST /api/v1/admin/customers/{id}/revoke-tokens` endpoint for admin to force-logout a customer user using `BLACKLIST_KEY_PREFIX`.
+The system SHALL provide a `POST /api/v1/admin/customers/{id}/revoke-tokens` endpoint for admin to force-logout a customer user.
 
 #### Scenario: Successful force-revoke customer
 - **WHEN** admin sends `POST /api/v1/admin/customers/{id}/revoke-tokens`

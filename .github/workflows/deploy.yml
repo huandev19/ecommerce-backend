@@ -61,6 +61,17 @@ jobs:
             Environment="DB_USERNAME=${{ secrets.DB_USERNAME }}"
             Environment="DB_PASSWORD=${{ secrets.DB_PASSWORD }}"
             Environment="JWT_SECRET=${{ secrets.JWT_PROD_SECRET }}"
+            Environment="REDIS_HOST=${{ secrets.REDIS_HOST }}"
+            Environment="REDIS_PORT=${{ secrets.REDIS_PORT }}"
+            Environment="REDIS_USERNAME=${{ secrets.REDIS_USERNAME }}"
+            Environment="REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}"
+            Environment="STORAGE_BASE_URL=${{ secrets.STORAGE_BASE_URL }}"
+            Environment="MINIO_ENDPOINT=${{ secrets.MINIO_ENDPOINT }}"
+            Environment="MINIO_ACCESS_KEY=${{ secrets.MINIO_ACCESS_KEY }}"
+            Environment="MINIO_SECRET_KEY=${{ secrets.MINIO_SECRET_KEY }}"
+            Environment="MINIO_BUCKET=${{ secrets.MINIO_BUCKET }}"
+            Environment="MINIO_REGION=${{ secrets.MINIO_REGION }}"
+            Environment="MINIO_PUBLIC_URL=${{ secrets.MINIO_PUBLIC_URL }}"
             ExecStart=/usr/bin/java -jar /www/v8n_ecommerce/backend/v8n-ecommerce.jar --spring.profiles.active=prod
             SuccessExitStatus=143
             TimeoutStopSec=10
