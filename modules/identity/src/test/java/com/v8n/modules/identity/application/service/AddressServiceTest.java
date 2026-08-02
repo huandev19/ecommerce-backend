@@ -5,10 +5,8 @@ import com.v8n.modules.core.application.exception.ErrorCode;
 import com.v8n.modules.identity.application.dto.AddressRequest;
 import com.v8n.modules.identity.domain.entity.Address;
 import com.v8n.modules.identity.domain.entity.Customer;
-import com.v8n.modules.identity.domain.entity.User;
 import com.v8n.modules.identity.domain.repository.AddressRepository;
 import com.v8n.modules.identity.domain.repository.CustomerRepository;
-import com.v8n.modules.identity.domain.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,7 +15,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -32,34 +29,23 @@ class AddressServiceTest {
     private AddressRepository addressRepository;
 
     @Mock
-    private UserRepository userRepository;
-
-    @Mock
     private CustomerRepository customerRepository;
 
     @InjectMocks
     private AddressService addressService;
 
-    private UUID userId;
     private UUID customerId;
     private UUID addressId;
-    private User mockUser;
     private Customer mockCustomer;
     private Address mockAddress;
 
     @BeforeEach
     void setUp() {
-        userId = UUID.randomUUID();
         customerId = UUID.randomUUID();
         addressId = UUID.randomUUID();
 
-        mockUser = new User();
-        mockUser.setId(userId);
-        mockUser.setEmail("test@example.com");
-
         mockCustomer = new Customer();
         mockCustomer.setId(customerId);
-        mockCustomer.setUser(mockUser);
         mockCustomer.setEmail("test@example.com");
 
         mockAddress = new Address();
@@ -69,13 +55,12 @@ class AddressServiceTest {
 
     @Test
     void testDeleteAddress_softDelete_setsDeletedAt() {
-        when(userRepository.findByIdNotDeleted(userId)).thenReturn(Optional.of(mockUser));
-        when(customerRepository.findByEmail(mockUser.getEmail())).thenReturn(Optional.of(mockCustomer));
+        when(customerRepository.findByIdNotDeleted(customerId)).thenReturn(Optional.of(mockCustomer));
         when(addressRepository.findByIdAndCustomerId(addressId, customerId)).thenReturn(Optional.of(mockAddress));
 
         assertNull(mockAddress.getDeletedAt());
 
-        addressService.deleteAddress(addressId, userId);
+        addressService.deleteAddress(addressId, customerId);
 
         assertNotNull(mockAddress.getDeletedAt());
         verify(addressRepository).save(mockAddress);
@@ -83,12 +68,11 @@ class AddressServiceTest {
 
     @Test
     void testDeleteAddress_addressNotFound_throwsException() {
-        when(userRepository.findByIdNotDeleted(userId)).thenReturn(Optional.of(mockUser));
-        when(customerRepository.findByEmail(mockUser.getEmail())).thenReturn(Optional.of(mockCustomer));
+        when(customerRepository.findByIdNotDeleted(customerId)).thenReturn(Optional.of(mockCustomer));
         when(addressRepository.findByIdAndCustomerId(addressId, customerId)).thenReturn(Optional.empty());
 
-        BusinessException exception = assertThrows(BusinessException.class, () -> 
-            addressService.deleteAddress(addressId, userId)
+        BusinessException exception = assertThrows(BusinessException.class, () ->
+            addressService.deleteAddress(addressId, customerId)
         );
 
         assertEquals(ErrorCode.RESOURCE_NOT_FOUND, exception.getErrorCode());
@@ -96,14 +80,13 @@ class AddressServiceTest {
 
     @Test
     void testCreateAddress_exceedsLimit_throwsException() {
-        when(userRepository.findByIdNotDeleted(userId)).thenReturn(Optional.of(mockUser));
-        when(customerRepository.findByEmail(mockUser.getEmail())).thenReturn(Optional.of(mockCustomer));
+        when(customerRepository.findByIdNotDeleted(customerId)).thenReturn(Optional.of(mockCustomer));
         when(addressRepository.countByCustomerId(customerId)).thenReturn(10L); // MAX_ADDRESSES_PER_USER
 
         AddressRequest request = new AddressRequest();
-        
-        BusinessException exception = assertThrows(BusinessException.class, () -> 
-            addressService.createAddress(userId, request)
+
+        BusinessException exception = assertThrows(BusinessException.class, () ->
+            addressService.createAddress(customerId, request)
         );
 
         assertEquals(ErrorCode.INVALID_REQUEST, exception.getErrorCode());

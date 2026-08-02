@@ -12,7 +12,6 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CustomerResponse {
     private UUID id;
-    private UUID userId;
     private String email;
     private String firstName;
     private String lastName;
@@ -20,6 +19,10 @@ public class CustomerResponse {
     private String phone;
     private String company;
     private String avatarUrl;
+    private String status;
+    private boolean emailVerified;
+    private boolean hasAccount;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private LocalDateTime lastLoginAt;
 }

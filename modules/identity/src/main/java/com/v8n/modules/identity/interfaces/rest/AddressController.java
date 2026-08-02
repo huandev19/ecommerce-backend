@@ -6,6 +6,8 @@ import com.v8n.modules.identity.application.dto.AddressResponse;
 import com.v8n.modules.identity.application.service.AddressService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -26,6 +28,8 @@ import java.util.UUID;
 @RequestMapping("/api/store/customers/addresses")
 @RequiredArgsConstructor
 public class AddressController {
+    // Khởi tạo Logger gắn với Class hiện tại
+    private static final Logger logger = LoggerFactory.getLogger(AddressController.class);
 
     private final AddressService addressService;
 
@@ -92,6 +96,9 @@ public class AddressController {
     }
 
     private UUID getUserIdFromAuthentication(Authentication authentication) {
-        return (UUID) authentication.getPrincipal();
+        logger.info("getUserIdFromAuthentication: {}", authentication.getPrincipal());
+        // ba46e86d-fb2d-c9ca-9628-14f268b55a23
+        String idUser = authentication.getPrincipal().toString();
+        return UUID.fromString(idUser);
     }
 }

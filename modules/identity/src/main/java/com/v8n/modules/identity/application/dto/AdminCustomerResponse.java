@@ -1,7 +1,7 @@
 package com.v8n.modules.identity.application.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.v8n.modules.identity.domain.entity.User.UserStatus;
+import com.v8n.modules.identity.domain.entity.Customer.CustomerStatus;
 import lombok.Builder;
 import lombok.Data;
 
@@ -17,6 +17,9 @@ public class AdminCustomerResponse {
     private String firstName;
     private String lastName;
     private String fullName;
-    private UserStatus status;
+    private CustomerStatus status;
+    private boolean emailVerified;
+    private boolean hasAccount;
     private LocalDateTime createdAt;
+    private LocalDateTime lastLoginAt;
 }

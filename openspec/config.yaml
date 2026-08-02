@@ -18,3 +18,15 @@ schema: spec-driven
 #       - Always include a "Non-goals" section
 #     tasks:
 #       - Break tasks into chunks of max 2 hours
+
+rules:
+  apply:
+    - "After all implementation tasks are complete, MUST suggest archiving the change using openspec-archive-change skill before calling attempt_completion"
+    - "Before final attempt_completion at end of implementation, check: are there unarchived changes? If yes, prompt user to archive"
+    - "If remaining incomplete tasks are only DB-verification or manual tests (cannot be automated), still suggest archive with a warning about pending tasks"
+    - "If delta specs exist in the change, sync them to main specs (openspec/specs/) before or during archive using openspec-sync-specs"
+  archive:
+    - "MUST follow openspec-archive-change skill steps exactly: status check → task check → delta spec assessment → user prompt → sync (if chosen) → archive"
+    - "Step 4 (delta spec assessment) is MANDATORY: compare delta spec vs main spec, show ADDED/MODIFIED/REMOVED summary, then use ask_followup_question to prompt user with 'Sync now (recommended)' vs 'Archive without syncing'"
+    - "NEVER sync delta specs with raw cp/mkdir commands — MUST use openspec-sync-specs skill via new_task tool"
+    - "NEVER skip the user prompt before syncing — user must explicitly approve sync"

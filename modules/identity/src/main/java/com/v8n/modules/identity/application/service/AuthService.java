@@ -3,11 +3,11 @@ package com.v8n.modules.identity.application.service;
 import com.v8n.modules.core.application.exception.BusinessException;
 import com.v8n.modules.core.application.exception.ErrorCode;
 import com.v8n.modules.identity.application.dto.AuthResponse;
+import com.v8n.modules.identity.application.dto.CustomerResponse;
 import com.v8n.modules.identity.application.dto.LoginRequest;
 import com.v8n.modules.identity.application.dto.RegisterRequest;
-import com.v8n.modules.identity.application.dto.UserResponse;
-import com.v8n.modules.identity.domain.entity.User;
-import com.v8n.modules.identity.domain.repository.UserRepository;
+import com.v8n.modules.identity.domain.entity.Customer;
+import com.v8n.modules.identity.domain.repository.CustomerRepository;
 import com.v8n.modules.identity.infrastructure.security.JwtTokenProvider;
 import com.v8n.modules.identity.infrastructure.security.TokenBlacklistService;
 import lombok.RequiredArgsConstructor;
@@ -24,54 +24,60 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final UserRepository userRepository;
+    private final CustomerRepository customerRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final TokenBlacklistService tokenBlacklistService;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
+        if (customerRepository.existsByEmail(request.getEmail())) {
             throw new BusinessException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
 
-        User user = new User();
-        user.setEmail(request.getEmail().toLowerCase().trim());
-        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
-        user.setPhone(request.getPhone());
-        user.setStatus(User.UserStatus.ACTIVE);
+        Customer customer = new Customer();
+        customer.setEmail(request.getEmail().toLowerCase().trim());
+        customer.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        customer.setFirstName(request.getFirstName());
+        customer.setLastName(request.getLastName());
+        customer.setPhone(request.getPhone());
+        customer.setStatus(Customer.CustomerStatus.ACTIVE);
+        customer.setHasAccount(true);
+        customer.setMetadata(new java.util.HashMap<>());
 
-        user = userRepository.save(user);
-        log.info("New user registered: {}", user.getEmail());
+        customer = customerRepository.save(customer);
+        log.info("New customer registered: {}", customer.getEmail());
 
-        return buildAuthResponse(user, null);
+        return buildAuthResponse(customer, null);
     }
 
     public AuthResponse login(LoginRequest request, String deviceId) {
-        User user = userRepository.findByEmail(request.getEmail().toLowerCase().trim())
+        Customer customer = customerRepository.findByEmail(request.getEmail().toLowerCase().trim())
                 .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_CREDENTIALS));
 
-        if (user.getStatus() == User.UserStatus.BANNED) {
+        if (!customer.isHasAccount()) {
+            throw new BusinessException(ErrorCode.INVALID_CREDENTIALS, "Account not registered");
+        }
+
+        if (customer.getStatus() == Customer.CustomerStatus.BANNED) {
             throw new BusinessException(ErrorCode.INVALID_CREDENTIALS, "Account is banned");
         }
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+        if (!passwordEncoder.matches(request.getPassword(), customer.getPasswordHash())) {
             throw new BusinessException(ErrorCode.INVALID_CREDENTIALS);
         }
 
-        user.setLastLoginAt(LocalDateTime.now());
-        userRepository.save(user);
-        log.info("User logged in {}: {}", deviceId != null ? "with device " + deviceId : "(null device)", user.getEmail());
+        customer.setLastLoginAt(LocalDateTime.now());
+        customerRepository.save(customer);
+        log.info("Customer logged in {}: {}", deviceId != null ? "with device " + deviceId : "(null device)", customer.getEmail());
 
-        return buildAuthResponse(user, deviceId);
+        return buildAuthResponse(customer, deviceId);
     }
 
-    public UserResponse getCurrentUser(String userId) {
-        User user = userRepository.findByIdNotDeleted(java.util.UUID.fromString(userId))
+    public CustomerResponse getCurrentUser(String userId) {
+        Customer customer = customerRepository.findByIdNotDeleted(java.util.UUID.fromString(userId))
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
-        return mapToUserResponse(user);
+        return mapToCustomerResponse(customer);
     }
 
     public AuthResponse refreshToken(String refreshToken) {
@@ -80,10 +86,10 @@ public class AuthService {
         }
 
         java.util.UUID userId = jwtTokenProvider.getUserIdFromToken(refreshToken);
-        User user = userRepository.findByIdNotDeleted(userId)
+        Customer customer = customerRepository.findByIdNotDeleted(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        return buildAuthResponse(user, null);
+        return buildAuthResponse(customer, null);
     }
 
     /**
@@ -102,32 +108,33 @@ public class AuthService {
         log.info("All sessions revoked for customer user {} from IP {}", userId, ipAddress);
     }
 
-    private AuthResponse buildAuthResponse(User user, String deviceId) {
-        String accessToken = jwtTokenProvider.generateAccessToken(user.getId(), user.getEmail(), deviceId);
-        String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId());
+    private AuthResponse buildAuthResponse(Customer customer, String deviceId) {
+        String accessToken = jwtTokenProvider.generateAccessToken(customer.getId(), customer.getEmail(), deviceId);
+        String refreshToken = jwtTokenProvider.generateRefreshToken(customer.getId());
 
         return AuthResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .tokenType("Bearer")
                 .expiresIn(jwtTokenProvider.getAccessTokenExpiration() / 1000)
-                .user(mapToUserResponse(user))
+                .user(mapToCustomerResponse(customer))
                 .build();
     }
 
-    private UserResponse mapToUserResponse(User user) {
-        return UserResponse.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .fullName(user.getFullName())
-                .phone(user.getPhone())
-                .avatarUrl(user.getAvatarUrl())
-                .status(user.getStatus().name())
-                .emailVerified(user.isEmailVerified())
-                .createdAt(user.getCreatedAt())
-                .lastLoginAt(user.getLastLoginAt())
+    private CustomerResponse mapToCustomerResponse(Customer customer) {
+        return CustomerResponse.builder()
+                .id(customer.getId())
+                .email(customer.getEmail())
+                .firstName(customer.getFirstName())
+                .lastName(customer.getLastName())
+                .fullName(customer.getFullName())
+                .phone(customer.getPhone())
+                .avatarUrl(customer.getAvatarUrl())
+                .status(customer.getStatus().name())
+                .emailVerified(customer.isEmailVerified())
+                .hasAccount(customer.isHasAccount())
+                .createdAt(customer.getCreatedAt())
+                .lastLoginAt(customer.getLastLoginAt())
                 .build();
     }
 }

@@ -16,5 +16,5 @@ public class AuthResponse {
     @Default
     private String tokenType = "Bearer";
     private long expiresIn;
-    private UserResponse user;
+    private CustomerResponse user;
 }

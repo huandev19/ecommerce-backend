@@ -11,4 +11,13 @@ public interface CustomerRepository extends BaseRepository<Customer, UUID> {
     Optional<Customer> findByEmail(String email);
 
     boolean existsByEmail(String email);
+
+    @org.springframework.data.jpa.repository.Query("SELECT c FROM Customer c WHERE " +
+           "(:query IS NULL OR LOWER(c.email) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+           "LOWER(c.firstName) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+           "LOWER(c.lastName) LIKE LOWER(CONCAT('%', :query, '%'))) " +
+           "ORDER BY c.createdAt DESC")
+    org.springframework.data.domain.Page<Customer> searchByQuery(
+            @org.springframework.data.repository.query.Param("query") String query,
+            org.springframework.data.domain.Pageable pageable);
 }

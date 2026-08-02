@@ -79,13 +79,11 @@ public class Address extends BaseEntity {
 
     private Map<String, Object> metadata;
 
-    public User getUser() {
-        return customer == null ? null : customer.getUser();
+    public Customer getLinkedCustomer() {
+        return customer;
     }
 
-    public void setUser(User user) {
-        Customer linkedCustomer = new Customer();
-        linkedCustomer.setUser(user);
-        this.customer = linkedCustomer;
+    public void setLinkedCustomer(Customer customer) {
+        this.customer = customer;
     }
 }

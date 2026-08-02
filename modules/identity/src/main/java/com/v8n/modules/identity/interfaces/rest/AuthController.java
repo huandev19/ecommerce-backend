@@ -5,7 +5,7 @@ import com.v8n.modules.identity.application.dto.AuthResponse;
 import com.v8n.modules.identity.application.dto.LoginRequest;
 import com.v8n.modules.identity.application.dto.LogoutRequest;
 import com.v8n.modules.identity.application.dto.RegisterRequest;
-import com.v8n.modules.identity.application.dto.UserResponse;
+import com.v8n.modules.identity.application.dto.CustomerResponse;
 import com.v8n.modules.identity.application.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -45,8 +45,8 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<ApiResponse<UserResponse>> getCurrentUser(Principal principal) {
-        UserResponse response = authService.getCurrentUser(principal.getName());
+    public ResponseEntity<ApiResponse<CustomerResponse>> getCurrentUser(Principal principal) {
+        CustomerResponse response = authService.getCurrentUser(principal.getName());
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 

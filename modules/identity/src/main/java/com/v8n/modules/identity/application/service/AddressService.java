@@ -6,10 +6,8 @@ import com.v8n.modules.identity.application.dto.AddressRequest;
 import com.v8n.modules.identity.application.dto.AddressResponse;
 import com.v8n.modules.identity.domain.entity.Address;
 import com.v8n.modules.identity.domain.entity.Customer;
-import com.v8n.modules.identity.domain.entity.User;
 import com.v8n.modules.identity.domain.repository.AddressRepository;
 import com.v8n.modules.identity.domain.repository.CustomerRepository;
-import com.v8n.modules.identity.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,7 +26,6 @@ public class AddressService {
     private static final int MAX_ADDRESSES_PER_USER = 10;
 
     private final AddressRepository addressRepository;
-    private final UserRepository userRepository;
     private final CustomerRepository customerRepository;
 
     @Transactional(readOnly = true)
@@ -169,9 +166,7 @@ public class AddressService {
     }
 
     private Customer getCustomerByUserId(UUID userId) {
-        User user = userRepository.findByIdNotDeleted(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
-        return customerRepository.findByEmail(user.getEmail())
+        return customerRepository.findByIdNotDeleted(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.CUSTOMER_NOT_FOUND));
     }
 

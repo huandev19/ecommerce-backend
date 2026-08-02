@@ -4,9 +4,7 @@ import com.v8n.modules.core.application.exception.BusinessException;
 import com.v8n.modules.core.application.exception.ErrorCode;
 import com.v8n.modules.identity.application.dto.CustomerResponse;
 import com.v8n.modules.identity.domain.entity.Customer;
-import com.v8n.modules.identity.domain.entity.User;
 import com.v8n.modules.identity.domain.repository.CustomerRepository;
-import com.v8n.modules.identity.domain.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,60 +24,40 @@ class CustomerServiceTest {
     @Mock
     private CustomerRepository customerRepository;
 
-    @Mock
-    private UserRepository userRepository;
-
     @InjectMocks
     private CustomerService customerService;
 
-    private UUID userId;
-    private User mockUser;
+    private UUID customerId;
     private Customer mockCustomer;
 
     @BeforeEach
     void setUp() {
-        userId = UUID.randomUUID();
-
-        mockUser = new User();
-        mockUser.setId(userId);
-        mockUser.setEmail("test@example.com");
+        customerId = UUID.randomUUID();
 
         mockCustomer = new Customer();
-        mockCustomer.setId(UUID.randomUUID());
-        mockCustomer.setUser(mockUser);
+        mockCustomer.setId(customerId);
         mockCustomer.setEmail("test@example.com");
+        mockCustomer.setStatus(Customer.CustomerStatus.ACTIVE);
+        mockCustomer.setHasAccount(true);
     }
 
     @Test
     void testGetCustomerByUserId_success() {
-        when(userRepository.findByIdNotDeleted(userId)).thenReturn(Optional.of(mockUser));
-        when(customerRepository.findByEmail(mockUser.getEmail())).thenReturn(Optional.of(mockCustomer));
+        when(customerRepository.findByIdNotDeleted(customerId)).thenReturn(Optional.of(mockCustomer));
 
-        CustomerResponse response = customerService.getCustomerByUserId(userId);
+        CustomerResponse response = customerService.getCustomerByUserId(customerId);
 
         assertNotNull(response);
         assertEquals(mockCustomer.getId(), response.getId());
-        assertEquals(userId, response.getUserId());
-    }
-
-    @Test
-    void testGetCustomerByUserId_userNotFound() {
-        when(userRepository.findByIdNotDeleted(userId)).thenReturn(Optional.empty());
-
-        BusinessException exception = assertThrows(BusinessException.class, () -> 
-            customerService.getCustomerByUserId(userId)
-        );
-
-        assertEquals(ErrorCode.USER_NOT_FOUND, exception.getErrorCode());
+        assertEquals(mockCustomer.getEmail(), response.getEmail());
     }
 
     @Test
     void testGetCustomerByUserId_customerNotFound() {
-        when(userRepository.findByIdNotDeleted(userId)).thenReturn(Optional.of(mockUser));
-        when(customerRepository.findByEmail(mockUser.getEmail())).thenReturn(Optional.empty());
+        when(customerRepository.findByIdNotDeleted(customerId)).thenReturn(Optional.empty());
 
-        BusinessException exception = assertThrows(BusinessException.class, () -> 
-            customerService.getCustomerByUserId(userId)
+        BusinessException exception = assertThrows(BusinessException.class, () ->
+            customerService.getCustomerByUserId(customerId)
         );
 
         assertEquals(ErrorCode.CUSTOMER_NOT_FOUND, exception.getErrorCode());
