@@ -22,7 +22,7 @@ PID=$(lsof -ti:$SERVER_PORT 2>/dev/null)
 if [ -n "$PID" ]; then
     echo "Port $SERVER_PORT đang bị chiếm bởi PID $PID. Đang kill..."
     kill -15 "$PID" 2>/dev/null
-    sleep 2
+    sleep 5
     # Kiểm tra lại, nếu chưa chết thì force kill
     if kill -0 "$PID" 2>/dev/null; then
         echo "PID $PID chưa tắt, force kill..."
