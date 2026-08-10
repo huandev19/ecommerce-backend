@@ -72,7 +72,7 @@ jobs:
             Environment="MINIO_BUCKET=${{ secrets.MINIO_BUCKET }}"
             Environment="MINIO_REGION=${{ secrets.MINIO_REGION }}"
             Environment="MINIO_PUBLIC_URL=${{ secrets.MINIO_PUBLIC_URL }}"
-            ExecStart=/usr/bin/java -jar /www/v8n_ecommerce/backend/v8n-ecommerce.jar --spring.profiles.active=prod
+            ExecStart=/usr/bin/java -Xms512m -Xmx2048m -jar /www/v8n_ecommerce/backend/v8n-ecommerce.jar --spring.profiles.active=prod
             SuccessExitStatus=143
             TimeoutStopSec=10
             Restart=on-failure
