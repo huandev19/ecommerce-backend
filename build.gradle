@@ -16,6 +16,7 @@ ext {
     set('springdocVersion', '2.5.0')
     set('postgresqlVersion', '42.7.3')
     set('redisVersion', '3.2.5')
+    set('uuidCreatorVersion', '6.0.0')
 }
 
 java {
@@ -73,6 +74,9 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+    // UUID v7 generator
+    implementation "com.github.f4b6a3:uuid-creator:${uuidCreatorVersion}"
 }
 
 tasks.named('test') {

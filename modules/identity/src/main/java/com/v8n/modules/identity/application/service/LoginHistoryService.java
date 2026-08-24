@@ -5,6 +5,7 @@ import com.v8n.modules.identity.domain.entity.LoginHistory;
 import com.v8n.modules.identity.domain.entity.UserAdmin;
 import com.v8n.modules.identity.domain.enums.LoginStatus;
 import com.v8n.modules.identity.domain.repository.LoginHistoryRepository;
+import com.v8n.modules.core.infrastructure.util.UuidV7;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -29,7 +30,7 @@ public class LoginHistoryService {
     public void recordLoginHistory(UserAdmin user, String email, LoginStatus status,
                                     String failureReason, String ipAddress, String userAgent) {
         LoginHistory history = new LoginHistory();
-        history.setId(UUID.randomUUID().toString());
+        history.setId(UuidV7.generateString());
         history.setUserAdmin(user);
         history.setEmail(email);
         history.setStatus(status);

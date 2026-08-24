@@ -15,6 +15,7 @@ import com.v8n.modules.catalog.domain.repository.CategoryRepository;
 import com.v8n.modules.catalog.domain.repository.ProductVariantRepository;
 import com.v8n.modules.core.application.exception.BusinessException;
 import com.v8n.modules.core.application.exception.ErrorCode;
+import com.v8n.modules.core.infrastructure.util.UuidV7;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -298,7 +299,7 @@ public class CatalogService {
     }
 
     private String generateSlug(String title) {
-        if (title == null) return UUID.randomUUID().toString();
+        if (title == null) return UuidV7.generateString();
         return title.toLowerCase()
                 .replaceAll("[^a-z0-9\\s-]", "")
                 .replaceAll("\\s+", "-")

@@ -1,5 +1,6 @@
 package com.v8n.modules.core.domain.event;
 
+import com.v8n.modules.core.infrastructure.util.UuidV7;
 import lombok.Getter;
 import org.springframework.context.ApplicationEvent;
 
@@ -13,7 +14,7 @@ public abstract class DomainEvent extends ApplicationEvent {
 
     protected DomainEvent(Object source) {
         super(source);
-        this.eventId = UUID.randomUUID();
+        this.eventId = UuidV7.generate();
         this.occurredAt = LocalDateTime.now();
     }
 }

@@ -124,11 +124,11 @@ public class AddressService {
     }
 
     private void clearDefaultShipping(UUID customerId) {
-        addressRepository.findByCustomerIdAndDefaultShippingTrue(customerId)
-                .ifPresent(addr -> {
-                    addr.setDefaultShipping(false);
-                    addressRepository.save(addr);
-                });
+        List<Address> defaultAddresses = addressRepository.findByCustomerIdAndDefaultShippingTrue(customerId);
+        for (Address address : defaultAddresses) {
+            address.setDefaultShipping(false);
+        }
+        addressRepository.saveAll(defaultAddresses);
     }
 
     private void clearDefaultBilling(UUID customerId) {

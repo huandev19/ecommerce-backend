@@ -13,7 +13,7 @@ public interface AddressRepository extends BaseRepository<Address, UUID> {
 
     Optional<Address> findByIdAndCustomerId(UUID id, UUID customerId);
 
-    Optional<Address> findByCustomerIdAndDefaultShippingTrue(UUID customerId);
+    List<Address> findByCustomerIdAndDefaultShippingTrue(UUID customerId);
 
     Optional<Address> findByCustomerIdAndDefaultBillingTrue(UUID customerId);
 

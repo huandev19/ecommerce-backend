@@ -2,6 +2,7 @@ package com.v8n.modules.identity.application.service;
 
 import com.v8n.modules.core.application.exception.BusinessException;
 import com.v8n.modules.core.application.exception.ErrorCode;
+import com.v8n.modules.core.infrastructure.util.UuidV7;
 import com.v8n.modules.identity.application.dto.AdminUserResponse;
 import com.v8n.modules.identity.application.dto.CreateUserAdminRequest;
 import com.v8n.modules.identity.application.dto.RoleSummary;
@@ -105,14 +106,14 @@ public class UserAdminService {
 
         // Create user
         UserAdmin user = new UserAdmin();
-        user.setId(UUID.randomUUID().toString());
+        user.setId(UuidV7.generateString());
         user.setEmail(request.getEmail().toLowerCase().trim());
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
         user.setPhone(request.getPhone());
         user.setAvatarUrl(request.getAvatarUrl());
         user.setIsActive(request.getIsActive() != null ? request.getIsActive() : true);
-        user.setActivationToken(UUID.randomUUID());
+        user.setActivationToken(UuidV7.generate());
         user.setFailedLoginAttempts(0);
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
@@ -277,7 +278,7 @@ public class UserAdminService {
             throw new BusinessException(ErrorCode.INVALID_REQUEST, "Tài khoản đã được kích hoạt");
         }
 
-        user.setActivationToken(UUID.randomUUID());
+        user.setActivationToken(UuidV7.generate());
         user.setUpdatedAt(LocalDateTime.now());
         userAdminRepository.save(user);
 

@@ -2,6 +2,7 @@ package com.v8n.modules.identity.application.service;
 
 import com.v8n.modules.core.application.exception.BusinessException;
 import com.v8n.modules.core.application.exception.ErrorCode;
+import com.v8n.modules.core.infrastructure.util.UuidV7;
 import com.v8n.modules.identity.application.dto.ActivationResponse;
 import com.v8n.modules.identity.application.dto.AdminAuthResponse;
 import com.v8n.modules.identity.application.dto.AdminLoginRequest;
@@ -310,7 +311,7 @@ public class AdminAuthService {
     private void recordLoginHistory(UserAdmin user, String email, LoginStatus status,
                                      String failureReason, String ipAddress, String userAgent) {
         LoginHistory history = new LoginHistory();
-        history.setId(UUID.randomUUID().toString());
+        history.setId(UuidV7.generateString());
         history.setUserAdmin(user);
         history.setEmail(email);
         history.setStatus(status);

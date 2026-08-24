@@ -82,7 +82,9 @@ public class AddressController {
             @PathVariable UUID addressId,
             Authentication authentication) {
         UUID userId = getUserIdFromAuthentication(authentication);
-        AddressResponse address = addressService.setDefaultShipping(addressId, userId);
+        // convert string addressId to uuid addressId
+        UUID addressIdString = UUID.fromString(addressId.toString());
+        AddressResponse address = addressService.setDefaultShipping(addressIdString, userId);
         return ResponseEntity.ok(ApiResponse.success(address));
     }
 
